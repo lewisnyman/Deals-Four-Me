@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>FourDeals</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FourDeals scans your Foursquare checkin history in order to recommend relevant deals for you.">
+    <meta name="author" content="Lewis Nyman">
+
+    <!-- Le styles -->
+
+    <link href="/assets/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="/assets/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="/assets/styles/style.css" rel="stylesheet">
+    
+    <!-- Le scripts -->
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+    <script type="text/javascript" src="/assets/scripts/jquery.ba-bbq.js"></script>
+    <script type="text/javascript" src="/assets/scripts/mustache.js"></script>
+    <script type="text/javascript" src="/assets/scripts/main.js"></script>
+    <script src="http://maps.google.com/maps/api/js?sensor=true"></script> 
+    
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="assets/ico/favicon.ico">
+
+    <link rel="apple-touch-icon" href="assets/ico/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="assets/ico/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="assets/ico/apple-touch-icon-114x114.png">
+  </head>
+
+<body>
+<div id="load">
+  <h2 class="info"></h2>
+</div>
+
+<div class="container-fluid">
+
+  <div class="row-fluid">
+    <div class="hero-unit">
+      <h1>Four deals</h1>
+      <p>I analyse your check-ins and present four deals that are useful to you. </p>
+      <p>No teeth whitening or massages. <small>(Unless that's your thing)</small></p>
+      <p><a id="foursquare-auth" class="btn btn-primary btn-large">Get my deals</a></p>
+    </div>
+  </div> 
+    
+  <div id="main" class="row-fluid">
+      
+      <div id="results" class="row-fluid"></div>
+      <div id="more-results" class="row-fluid"><a class="btn btn-primary btn-large">Four more please</a></div>
+  </div>
+  
+  <footer class="footer">
+  <p>None of your personal data is stored on our servers. All data displayed is only ever handled on <em>your device</em>.</p>
+  <p>Thinking and typing by <a href="https://twitter.com/lewisnyman">@lewisnyman</a></p>
+  </footer>
+  
+</div>
+  
+</body>
+</html>
+
