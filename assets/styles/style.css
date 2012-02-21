@@ -11,6 +11,14 @@ a {
   display: block;
 }
 
+.reasons {
+  margin-left: 0;
+}
+
+#load {
+  display: none;
+}
+
 .loading #load {
   display: block;
   background-color: rgba(0,0,0, 0.6);
@@ -33,12 +41,25 @@ a {
   text-align: center;
 }
 
+.gb {
+  background: transparent url('/assets/img/gb.png') no-repeat left center;
+  float: right;
+  padding: 9px 0;
+  text-indent: 20px;
+}
+
 del {
+  color: #eee;
+}
+
+del:hover {
   color: #CCC;
 }
 
 .deal {
-  margin-bottom: 30px;  
+  padding-bottom: 17px;
+  margin-bottom: 18px; 
+  border-bottom: 1px solid #eeeeee; 
 }
 
 .prices * {

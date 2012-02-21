@@ -6,11 +6,11 @@
       var parent = $this.parents('.deal');
       var reasoning = $('.reasoning', parent);
       if(reasoning.is('.fadeIn')){
-        reasoning.removeClass('fadeIn').addClass('fadeOut');
+        reasoning.removeClass('fadeIn').addClass('animated fadeOut');
          $this.text('Why?');
       }
       else {
-        reasoning.show().addClass('animated fadeIn');
+        reasoning.show().removeClass('fadeOut').addClass('animated fadeIn');
          $this.text('Oh ok');
       }
     });    
@@ -19,16 +19,17 @@
  /* GLOBALS*/
  var lat; 
  var lng;
+ var currenturl = window.location.toString();
  
  templates = {
   category : "<div class='category {{times}}-times'>{{name}} - {{times}} times</div>",
   testdeals : "<div class='deal row-fluid'><h4><a href='{{deal_url}}'>{{short_title}}</a></h4><h5>Rating = {{dealRating}}</h5><p>We recommended this deal because you have been to:</p><ul class='reasons'>{{#reasoning}}<li>{{.}}</li>{{/reasoning}}</ul><a href='{{deal_url}}'><img src='{{image_link}}' /></a><h5>Categories</h5><ul class='categories'>{{#categories}}<li>{{name}}</li>{{/categories}}</ul><h5>Tags</h5><ul class='tags'>{{#tags}}<li> {{name}}</li>{{/tags}}</ul></div>",
-  deals : "<div class='deal row-fluid animated fadeInRightBig'><h2><a href='{{deal_url}}'>{{short_title}}</a></h2><div class='span3 image'><a href='{{deal_url}}'><img src='{{image_link}}' /></a></div><div class='span3 prices'><p><strong><del>&pound;{{value}}</del></strong></p><p><strong>&pound;{{price}}</strong></p></div><div class='span3 actions'><p><a class='why'>Why?</a></p><p><a href='{{deal_url}}' target='_blank' class='btn btn-large go'>Deal me!</a></p></div><div class='span3 reasoning'><p>We recommended this deal because you have been to:</p><ul class='reasons'>{{#reasoning}}<li>{{.}}</li>{{/reasoning}}</ul></div></div>",
+  deals : "<div class='deal animated fadeInRightBig'><h2><a href='{{deal_url}}'>{{short_title}}</a></h2><div class='row-fluid'><div class='span3 image'><a href='{{deal_url}}'><img src='{{image_link}}' /></a></div><div class='span3 prices'><p><strong><del>&pound;{{value}}</del></strong></p><p><strong>&pound;{{price}}</strong></p></div><div class='span3 actions'><p><a class='why'>Why?</a></p><p><a href='{{deal_url}}' target='_blank' class='btn btn-large go'>Deal me!</a></p></div><div class='span3 reasoning'><p>I recommend this deal because you have been to:</p><ul class='reasons'>{{#reasoning}}<li>{{.}}</li>{{/reasoning}}</ul></div></div></div>",
  }
  
   foursquare = {
     client_id : 'HLNUKNXPPKCLD4NOYSFLCPO24KL153BHL2CFBVUYFZNLKOLU',
-    callback_url : 'http://froupon.lewisnyman.co.uk',
+    callback_url : window.currenturl,
     auth_url : 'https://foursquare.com/oauth2/authenticate',
     token : '',
     ready : false,
@@ -98,18 +99,111 @@
       });
     },
   };
- 
+  
+  function dealProvider(client_id, api, exclude) {
+    this.client_id = 'client_id';
+    this.api = api;
+    this.ready = false;
+    this.counter = 0;
+    this.get = function (callback) {
+       $.getJSON(this.api.dev + this.api.deals + '/?city=' + this.city.short_name + '&key=' + this.client_id, {},function(data) {
+         this.deals = data.response.deals;
+         callback();
+       })
+   };
+   this.sort = function(callback) {
+     this.deals.sort ( function (a,b) {
+       return b.dealRating - a.dealRating;
+     });
+     callback();
+   };
+   this.display = function() {
+    toggleLoading();
+    var output = "";
+    var i = this.counter;
+    var end = i+4; 
+    var noMore = false;
+    var deals = this.deals;
+    if(end > deals.length) {
+      end = deals.length;
+      noMore = true;
+    }
+    for (i; i < end; i++) {
+      var deal = this.deals[i];
+      if(deal.dealRating > 0){
+        output += Mustache.render(templates.deals, deal);
+      }
+      else {
+        this.deals[i].remove();
+      }
+    }
+    if(noMore) {
+      $('body').removeClass('moretoload');
+    }
+    else {
+      $('body').addClass('moretoload');
+    }
+    this.counter = i;
+    $('#results').append(output);
+    };
+  this.exclude = exclude; 
+};
+   
   dealios = {
     client_id : '3b49314ecba04335e16aefb6d3b74295',
     api : {
       base : 'http://www.dealzippy.co.uk/api/',
       dev : 'http://www.dealzippy.co.uk/dev-api/',
       deals : 'deals',
+      cities : 'cities',
     },
     ready : false,
     counter : 0,
-    get : function (callback) {
-        $.getJSON(this.api.dev + this.api.deals + '/?city=' + dealios.city.short_name + '&key=' + this.client_id, {},function(data) {
+    getCities : function(callback) {
+      $.getJSON(this.api.dev + this.api.cities + '/?key=' + this.client_id, {},function(data) {
+        dealios.cities = data.response.cities;
+        callback();
+      })
+    },
+    findCity : function(callback) {
+    var geocoder = new google.maps.Geocoder();
+    var latLng = new google.maps.LatLng(window.lat,window.lng);
+    if (geocoder) {
+          geocoder.geocode({ 'latLng': latLng }, function (results, status) {
+             if (status == google.maps.GeocoderStatus.OK) {
+                var address = results[0].address_components;
+                var found = false;
+                for (var i = 0; i < address.length; i++) {
+                  if(found) {
+                    break;
+                  }
+                  var component = address[i];
+                  var componentname = component.short_name;
+                  for(var j = 0; j < dealios.cities.length; j++) {
+                    if(found) {
+                      break;
+                    }
+                    var city = dealios.cities[j];
+                    var cityname = city.name;
+                      if(componentname === cityname){
+                        console.log(componentname + " == " + cityname);
+                        dealios.city = cityname;
+                        found = true;
+                      }
+                  }
+                }
+                dealios.address = address;
+                callback();
+             }
+             else {
+                console.log("Geocoding failed: " + status);
+             }
+          });
+       }    
+     },
+    getDeals : function (callback) {
+      console.log(dealios);
+        $.getJSON(this.api.dev + this.api.deals + '/?city=' + dealios.city + '&key=' + this.client_id, {},function(data) {
           dealios.deals = data.response.deals;
           callback();
         })
@@ -154,28 +248,31 @@
   
   function main() {
     foursquare.auth( function() {
-    toggleLoading('Getting your location');
+      toggleLoading('Getting your location');
       getgeo( function () {
-        toggleLoading('Finding your city');
-        findCity(function() {
-          toggleLoading('Grabbing Foursquare Checkins');
-          foursquare.get( function() {//GET FOURSQUARE
-            toggleLoading('Calculating suitable deals');
-            foursquare.categories.sort( function(a,b) {
-              return b.times - a.times;
-            });
-            if(areWeThereYet(foursquare)) {
-              wordForWord(dealios.sort, dealios.display);
-            }
-          });
-          dealios.get( function() {//GET DEALIOS
-            if(areWeThereYet(dealios)) {
-              wordForWord(dealios.sort, dealios.display);
-            }
-          });
-        });
-      });
-    });
+        toggleLoading('Finding possible cities');
+       dealios.getCities ( function() {
+          toggleLoading('Finding your city');
+          dealios.findCity(function() {
+            toggleLoading('Grabbing Foursquare Checkins');
+            foursquare.get( function() {//GET FOURSQUARE
+              toggleLoading('Calculating suitable deals');
+              foursquare.categories.sort( function(a,b) {
+                return b.times - a.times;
+              });
+              if(areWeThereYet(foursquare)) {
+                wordForWord(dealios.sort, dealios.display);
+              }
+            });//foursquare.get
+            dealios.getDeals( function() {//GET DEALIOS
+              if(areWeThereYet(dealios)) {
+                wordForWord(dealios.sort, dealios.display);
+              }
+            });//dealios.getDeals
+          });//findCity
+        });/*dealios.getCities*/
+      });//getgeo
+    });//foursquare.auth
   }
   
   function wordForWord(callback1, callback2) {
@@ -242,24 +339,6 @@
     }
   }
   
-  function findCity(callback) {
-  var geocoder = new google.maps.Geocoder();
-  var latLng = new google.maps.LatLng(window.lat,window.lng);
-  if (geocoder) {
-        geocoder.geocode({ 'latLng': latLng }, function (results, status) {
-           if (status == google.maps.GeocoderStatus.OK) {
-              var address = results[0].address_components;
-              console.log(address);
-              dealios.city = address[2];
-              callback();
-           }
-           else {
-              console.log("Geocoding failed: " + status);
-           }
-        });
-     }    
-   }
-  
   function getgeo(callback) {
       /* HTML 5 geolocation. */
     navigator.geolocation.getCurrentPosition(function(data) {
@@ -267,6 +346,13 @@
       window.lng = data['coords']['longitude'];
       callback();
     });
+  }
+  
+  var eightcoupons;
+  
+  function usaProvider(){
+    var api = new Array('http://api.8coupons.com/v1/', 'dev', 'deals');
+    window.eightcoupons = new dealProvider('0e00393ea8080ec38d0be25ebbbc445682cb751e7551d2e55b2f3d0750f4cf97bcb94ecc5761350d5046d039b4ff9ace', api);
   }
   
   // Array Remove - By John Resig (MIT Licensed)
