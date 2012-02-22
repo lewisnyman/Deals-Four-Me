@@ -21,7 +21,7 @@
  var geo = false;
  var lat; 
  var lng;
- var currenturl = window.location.toString();
+ var currenturl = 'www.dealsfourme.com';
  
  templates = {
   category : "<div class='category {{times}}-times'>{{name}} - {{times}} times</div>",
