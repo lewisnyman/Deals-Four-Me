@@ -24,7 +24,8 @@
  templates = {
   category : "<div class='category {{times}}-times'>{{name}} - {{times}} times</div>",
   testdeals : "<div class='deal row-fluid'><h4><a href='{{deal_url}}'>{{short_title}}</a></h4><h5>Rating = {{dealRating}}</h5><p>We recommended this deal because you have been to:</p><ul class='reasons'>{{#reasoning}}<li>{{.}}</li>{{/reasoning}}</ul><a href='{{deal_url}}'><img src='{{image_link}}' /></a><h5>Categories</h5><ul class='categories'>{{#categories}}<li>{{name}}</li>{{/categories}}</ul><h5>Tags</h5><ul class='tags'>{{#tags}}<li> {{name}}</li>{{/tags}}</ul></div>",
-  deals : "<div class='deal animated fadeInRightBig'><h2><a href='{{deal_url}}'>{{short_title}}</a></h2><div class='row-fluid'><div class='span3 image'><a href='{{deal_url}}'><img src='{{image_link}}' /></a></div><div class='span3 prices'><p><strong><del>&pound;{{value}}</del></strong></p><p><strong>&pound;{{price}}</strong></p></div><div class='span3 actions'><p><a class='why'>Why?</a></p><p><a href='{{deal_url}}' target='_blank' class='btn btn-large go'>Deal me!</a></p></div><div class='span3 reasoning'><p>I recommend this deal because you have been to:</p><ul class='reasons'>{{#reasoning}}<li>{{.}}</li>{{/reasoning}}</ul></div></div></div>",
+  deals : "<div data-rating='{{dealRating}}' class='deal animated fadeInRightBig'><h2><a href='{{deal_url}}'>{{short_title}}</a></h2><div class='row-fluid'><div class='span3 image'><a href='{{deal_url}}'><img src='{{image_link}}' /></a></div><div class='span3 prices'><p><strong><del>&pound;{{value}}</del></strong></p><p><strong>&pound;{{price}}</strong></p></div><div class='span3 actions'><p><a class='why'>Why?</a></p><p><a href='{{deal_url}}' target='_blank' class='btn btn-large go'>Deal me!</a></p></div><div class='span3 reasoning'><p>I recommend this deal because you have been to:</p><ul class='reasons'>{{#reasoning}}<li>{{.}}</li>{{/reasoning}}</ul></div></div></div>",
+  cities : '<a class="btn" href="#">{{city}}</a><a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a><ul class="dropdown-menu">{{#cities}}<li><a href="#">{{name}}</a></li>{{/cities}}</ul>',
  }
  
   foursquare = {
@@ -186,7 +187,6 @@
                     var city = dealios.cities[j];
                     var cityname = city.name;
                       if(componentname === cityname){
-                        console.log(componentname + " == " + cityname);
                         dealios.city = cityname;
                         found = true;
                       }
@@ -197,13 +197,26 @@
              }
              else {
                 console.log("Geocoding failed: " + status);
+                
              }
           });
        }    
      },
+     displayCities : function() {
+       var output = "";
+       if($('#cities').length == 0) {
+         output += '<div id="cities" class="span btn-group">';
+         output += Mustache.render(templates.cities, dealios);
+         output += '</div';
+        $('.hero-unit p:last-child').append(output);
+       }else {
+         output += Mustache.render(templates.cities, dealios);
+        $('#cities').html(output);
+       }
+     },
     getDeals : function (callback) {
-      console.log(dealios);
         $.getJSON(this.api.dev + this.api.deals + '/?city=' + dealios.city + '&key=' + this.client_id, {},function(data) {
+          dealios.counter = 0;
           dealios.deals = data.response.deals;
           callback();
         })
@@ -217,31 +230,43 @@
     display : function() {
       toggleLoading();
       var output = "";
-      var i = dealios.counter;
-      var end = i+4; 
+      var number = 4;
+      var count = 0; 
       var noMore = false;
       var deals = dealios.deals;
-      if(end > deals.length) {
-        end = deals.length;
-        noMore = true;
-      }
-      for (i; i < end; i++) {
-        var deal = dealios.deals[i];
-        if(deal.dealRating > 0){
-          output += Mustache.render(templates.deals, deal);
-        }
-        else {
-          dealios.deals[i].remove();
+      var lastknowndeal;
+      for (var i = 0; i < deals.length; i++) {
+        if(i >= dealios.counter && count <= number){
+          var deal = dealios.deals[i];
+          if(deal.dealRating > 0) {
+            output += Mustache.render(templates.deals, deal);
+            count++;
+            lastknowndeal = i;
+          }
         }
       }
-      if(noMore) {
+      if(count < number) {
         $('body').removeClass('moretoload');
       }
       else {
         $('body').addClass('moretoload');
       }
-      dealios.counter = i;
+      dealios.counter = lastknowndeal;
+      if(output === "") {
+        output = "<p>I'm sorry, there are no good deals in your area based on your check-in history. Come back in a few days and try again.</p>"
+      }
       $('#results').append(output);
+      },
+      redisplay : function() {
+        $('#results').html('');
+        dealios.displayCities();
+        toggleLoading('Calculating suitable deals');
+        dealios.getDeals( function() {//GET DEALIOS
+          if(areWeThereYet(dealios)) {
+            wordForWord(dealios.sort, dealios.display);
+          }
+        });
+        
       },
     exclude : new Array("restaurants", "and"), 
   };
@@ -254,6 +279,7 @@
        dealios.getCities ( function() {
           toggleLoading('Finding your city');
           dealios.findCity(function() {
+            dealios.displayCities();
             toggleLoading('Grabbing Foursquare Checkins');
             foursquare.get( function() {//GET FOURSQUARE
               toggleLoading('Calculating suitable deals');
@@ -262,11 +288,13 @@
               });
               if(areWeThereYet(foursquare)) {
                 wordForWord(dealios.sort, dealios.display);
+                tidy();
               }
             });//foursquare.get
             dealios.getDeals( function() {//GET DEALIOS
               if(areWeThereYet(dealios)) {
                 wordForWord(dealios.sort, dealios.display);
+                tidy();
               }
             });//dealios.getDeals
           });//findCity
@@ -276,8 +304,9 @@
   }
   
   function wordForWord(callback1, callback2) {
-    for (var i = 0; i < dealios.deals.length; i++) {//Deals
-      var deal = dealios.deals[i];
+    var deals = dealios.deals;
+    for (var i = 0; i < deals.length; i++) {//Deals
+      var deal = deals[i];
       var dealRating = 0;
       var reasoning = new Array;
       var tags = deal.tags;
@@ -315,9 +344,33 @@
 
       deal.reasoning = reasoning;
       deal.dealRating = dealRating;
-      dealios.deals[i] = deal;
+      deals[i] = deal;
     }
+    for (var z = 0; z < deals.length; z++) {
+      var deal = deals[z];
+      if(deal.dealRating < 1) {
+        dealios.deals.remove(z);
+      }
+    }
+    console.log(deals);
+    window.dealios.deals = deals;
     callback1(callback2);
+  }
+  
+  function sendFeedback() {
+    var feedback = {
+      data : collectData(),
+      intro : "Thanks for posting your feedback. Would you be happy to include a copy of the data displayed on the page so I can debug the output?",
+      buttontext : "Send",
+    }
+    var output = Mustache.render(templates.feedback, feedback);
+    
+  }  
+  
+  function collectData() {
+        var output;
+        output = jQuery.param(foursquare);
+        ouput += dealios;
   }
 
   
@@ -337,6 +390,27 @@
        $('body').addClass('loading');
        $('#load .info').text(message);
     }
+  }
+  
+  function tidy() {
+    $('#foursquare-auth').click( function() {
+      var $this = $('a:first','#cities');
+      var text = $this.text();
+      dealios.city = text;
+      dealios.redisplay();
+    });
+    $('a', '#cities').live('click', function (){
+      var $this = $(this);
+      var text = $this.text();
+      dealios.city = text;
+      dealios.redisplay();
+    });
+  }
+  
+  function error(message) {
+    var container = $('.hero-unit');
+    var output = '<p class="alert alert-error">' + message + '</p>';
+    container.append(output);
   }
   
   function getgeo(callback) {

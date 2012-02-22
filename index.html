@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>Deals Four Me</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="FourDeals scans your Foursquare checkin history in order to recommend relevant deals for you.">
+    <meta name="description" content="Deals Four Me scans your Foursquare checkin history and recommends relevant deals just for you.">
     <meta name="author" content="Lewis Nyman">
 
     <!-- Le styles -->
@@ -14,9 +14,10 @@
     <link href="/assets/styles/style.css" rel="stylesheet">
     
     <!-- Le scripts -->
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script type="text/javascript" src="/assets/scripts/jquery.ba-bbq.js"></script>
     <script type="text/javascript" src="/assets/scripts/mustache.js"></script>
+    <script type="text/javascript" src="/assets/scripts/bootstrap-dropdown.js"></script>
     <script type="text/javascript" src="/assets/scripts/main.js"></script>
     <script src="http://maps.google.com/maps/api/js?sensor=true"></script> 
     
@@ -37,6 +38,7 @@
 <body>
 <div id="load">
   <h2 class="info"></h2>
+  <div class="icon"></div>
 </div>
 
 <div class="container-fluid">
@@ -48,7 +50,7 @@
       <h1>Deals Four Me</h1>
       <p>I analyse your check-ins and present four deals that are uniquely useful to you. </p>
       <p>No teeth whitening or massages. <small>(Unless that's your thing)</small></p>
-      <p><a id="foursquare-auth" class="btn btn-primary btn-large">Get my deals</a></p>
+      <p><a id="foursquare-auth" class="span btn btn-primary btn-large">Get my deals</a></p>
     </div>
   </div> 
     

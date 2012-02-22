@@ -3,6 +3,14 @@
   display: none;
 }
 
+#foursquare-auth {
+  margin-left: 0;
+}
+
+.fleft {
+  float: left;
+}
+
 a {
   cursor: pointer;
 }
@@ -28,12 +36,31 @@ a {
   
     /* useful if you don't want a bg color from leaking outside the border: */
     -moz-background-clip: padding; -webkit-background-clip: padding-box; background-clip: padding-box;
-    
     position: fixed;
-    left: 40%;
-    top: 40%;
+    left: 50%;
+    top: 50%;
+    margin: -100px 0 0 -100px;
     width: 200px;
     height: 200px;
+    z-index: 10;
+}
+
+#load h2{
+  padding: 10px 10px 0 10px;
+}
+
+.loading #load .icon {
+  background-image: url(/assets/img/ajax-loader.png);
+  -webkit-animation: rotate 2s linear infinite;
+  -moz-animation: rotate 2s linear infinite;
+  display: block; 
+  margin: 0; 
+  width: 36px; 
+  height: 36px; background-color: transparent;
+  position: absolute;
+  bottom: 20%;
+  margin-left: -18px; 
+  left: 50%; 
 }
 
 #load .info {
@@ -67,12 +94,18 @@ del:hover {
   line-height: 60px;
 }
 
-.reasoning {
+#main .reasoning {
   display: none;
 }
 
 .actions {
   padding-top: 57px;
+}
+
+.image img {
+    -webkit-box-shadow: 0 0 40px 0 rgba(0,0,0,0.1); /* Saf3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+       -moz-box-shadow: 0 0 40px 0 rgba(0,0,0,0.1); /* FF3.5 - 3.6 */
+            box-shadow: 0 0 40px 0 rgba(0,0,0,0.1); /* Opera 10.5, IE9, FF4+, Chrome 6+, iOS 5 */
 }
 
 
@@ -225,3 +258,20 @@ del:hover {
 	animation-name: fadeOut;
 }
 
+@-webkit-keyframes rotate {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to { 
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@-moz-keyframes rotate {
+  from {
+    -moz-transform: rotate(0deg);
+  }
+  to { 
+    -moz-transform: rotate(360deg);
+  }
+}
