@@ -273,7 +273,6 @@
       if($('.deal', '#results').length == 0) {
         results.append(output);
         var position = results.offset();
-        console.log(position);
         window.scrollTo(position.left,position.top);
       }
       else {
@@ -377,7 +376,6 @@
         dealios.deals.remove(z);
       }
     }
-    console.log(deals);
     window.dealios.deals = deals;
     callback1(callback2);
   }
@@ -407,7 +405,6 @@
   }
   
   function toggleLoading(message){
-    console.log(message);
     if(typeof message === "undefined") {
       $('body').removeClass('loading');
     }
