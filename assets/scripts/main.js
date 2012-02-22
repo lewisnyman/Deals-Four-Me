@@ -17,6 +17,7 @@
   }); 
 
  /* GLOBALS*/
+ var geo = false;
  var lat; 
  var lng;
  var currenturl = window.location.toString();
@@ -24,7 +25,7 @@
  templates = {
   category : "<div class='category {{times}}-times'>{{name}} - {{times}} times</div>",
   testdeals : "<div class='deal row-fluid'><h4><a href='{{deal_url}}'>{{short_title}}</a></h4><h5>Rating = {{dealRating}}</h5><p>We recommended this deal because you have been to:</p><ul class='reasons'>{{#reasoning}}<li>{{.}}</li>{{/reasoning}}</ul><a href='{{deal_url}}'><img src='{{image_link}}' /></a><h5>Categories</h5><ul class='categories'>{{#categories}}<li>{{name}}</li>{{/categories}}</ul><h5>Tags</h5><ul class='tags'>{{#tags}}<li> {{name}}</li>{{/tags}}</ul></div>",
-  deals : "<div data-rating='{{dealRating}}' class='deal animated fadeInRightBig'><h2><a href='{{deal_url}}'>{{short_title}}</a></h2><div class='row-fluid'><div class='span3 image'><a href='{{deal_url}}'><img src='{{image_link}}' /></a></div><div class='span3 prices'><p><strong><del>&pound;{{value}}</del></strong></p><p><strong>&pound;{{price}}</strong></p></div><div class='span3 actions'><p><a class='why'>Why?</a></p><p><a href='{{deal_url}}' target='_blank' class='btn btn-large go'>Deal me!</a></p></div><div class='span3 reasoning'><p>I recommend this deal because you have been to:</p><ul class='reasons'>{{#reasoning}}<li>{{.}}</li>{{/reasoning}}</ul></div></div></div>",
+  deals : "<div data-rating='{{dealRating}}' class='deal animated fadeInRightBig'><h2><a target='_blank' href='{{deal_url}}'>{{short_title}}</a></h2><div class='row-fluid'><div class='span3 image'><a target='_blank' href='{{deal_url}}'><img src='{{image_link}}' /></a></div><div class='span3 prices'><p><strong><del>&pound;{{value}}</del></strong></p><p><strong>&pound;{{price}}</strong></p></div><div class='span3 actions'><p><a class='why'>Why?</a></p><p><a href='{{deal_url}}' target='_blank' class='btn btn-large go'>Deal me!</a></p></div><div class='span3 reasoning'><p>I recommend this deal because you have been to:</p><ul class='reasons'>{{#reasoning}}<li>{{.}}</li>{{/reasoning}}</ul></div></div></div>",
   cities : '<a class="btn" href="#">{{city}}</a><a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a><ul class="dropdown-menu">{{#cities}}<li><a href="#">{{name}}</a></li>{{/cities}}</ul>',
  }
  
@@ -167,39 +168,44 @@
       })
     },
     findCity : function(callback) {
-    var geocoder = new google.maps.Geocoder();
-    var latLng = new google.maps.LatLng(window.lat,window.lng);
-    if (geocoder) {
-          geocoder.geocode({ 'latLng': latLng }, function (results, status) {
-             if (status == google.maps.GeocoderStatus.OK) {
-                var address = results[0].address_components;
-                var found = false;
-                for (var i = 0; i < address.length; i++) {
-                  if(found) {
-                    break;
-                  }
-                  var component = address[i];
-                  var componentname = component.short_name;
-                  for(var j = 0; j < dealios.cities.length; j++) {
-                    if(found) {
-                      break;
-                    }
-                    var city = dealios.cities[j];
-                    var cityname = city.name;
-                      if(componentname === cityname){
-                        dealios.city = cityname;
-                        found = true;
+      if(window.geo){
+        var geocoder = new google.maps.Geocoder();
+        var latLng = new google.maps.LatLng(window.lat,window.lng);
+        if (geocoder) {
+              geocoder.geocode({ 'latLng': latLng }, function (results, status) {
+                 if (status == google.maps.GeocoderStatus.OK) {
+                    var address = results[0].address_components;
+                    var found = false;
+                    for (var i = 0; i < address.length; i++) {
+                      if(found) {
+                        break;
                       }
-                  }
-                }
-                dealios.address = address;
-                callback();
-             }
-             else {
-                console.log("Geocoding failed: " + status);
-                
-             }
-          });
+                      var component = address[i];
+                      var componentname = component.short_name;
+                      for(var j = 0; j < dealios.cities.length; j++) {
+                        if(found) {
+                          break;
+                        }
+                        var city = dealios.cities[j];
+                        var cityname = city.name;
+                          if(componentname === cityname){
+                            dealios.city = cityname;
+                            found = true;
+                          }
+                      }
+                    }
+                    if(!found) {
+                      dealios.city = "Unknown";
+                    }
+                    dealios.address = address;
+                    callback();
+                 }
+                 else {
+                   dealios.city = "Unknown";
+                    callback();            
+                 }
+              });
+           }
        }    
      },
      displayCities : function() {
@@ -215,11 +221,18 @@
        }
      },
     getDeals : function (callback) {
+      if(dealios.city != "Unknown") {
         $.getJSON(this.api.dev + this.api.deals + '/?city=' + dealios.city + '&key=' + this.client_id, {},function(data) {
           dealios.counter = 0;
           dealios.deals = data.response.deals;
           callback();
         })
+      }
+      else {
+       error('I can not find your city. Please choose a city manually.');
+       tidy();   
+       toggleLoading();     
+      }
     },
     sort : function(callback) {
       dealios.deals.sort ( function (a,b) {
@@ -230,13 +243,13 @@
     display : function() {
       toggleLoading();
       var output = "";
-      var number = 4;
+      var number = 3;
       var count = 0; 
       var noMore = false;
       var deals = dealios.deals;
       var lastknowndeal;
       for (var i = 0; i < deals.length; i++) {
-        if(i >= dealios.counter && count <= number){
+        if(i > dealios.counter && count <= number){
           var deal = dealios.deals[i];
           if(deal.dealRating > 0) {
             output += Mustache.render(templates.deals, deal);
@@ -253,11 +266,12 @@
       }
       dealios.counter = lastknowndeal;
       if(output === "") {
-        output = "<p>I'm sorry, there are no good deals in your area based on your check-in history. Come back in a few days and try again.</p>"
+        output = "<p class='alert'>I'm sorry, there are no good deals in your area based on your check-in history. Come back in a few days for a fresh batch.</p>"
       }
       $('#results').append(output);
       },
       redisplay : function() {
+        $('.alert').remove();
         $('#results').html('');
         dealios.displayCities();
         toggleLoading('Calculating suitable deals');
@@ -282,7 +296,6 @@
             dealios.displayCities();
             toggleLoading('Grabbing Foursquare Checkins');
             foursquare.get( function() {//GET FOURSQUARE
-              toggleLoading('Calculating suitable deals');
               foursquare.categories.sort( function(a,b) {
                 return b.times - a.times;
               });
@@ -304,6 +317,7 @@
   }
   
   function wordForWord(callback1, callback2) {
+    toggleLoading('Calculating suitable deals');
     var deals = dealios.deals;
     for (var i = 0; i < deals.length; i++) {//Deals
       var deal = deals[i];
@@ -377,6 +391,8 @@
   function areWeThereYet(object){
     object.ready = true;
     if(foursquare.ready && dealios.ready) {
+      foursquare.ready = false;
+      dealios.ready = false;
       return true;
     }
   }
@@ -410,7 +426,7 @@
   function error(message) {
     var container = $('.hero-unit');
     var output = '<p class="alert alert-error">' + message + '</p>';
-    container.append(output);
+    container.after(output);
   }
   
   function getgeo(callback) {
@@ -418,6 +434,10 @@
     navigator.geolocation.getCurrentPosition(function(data) {
       window.lat = data['coords']['latitude'];
       window.lng = data['coords']['longitude'];
+      /*Fake Maimi data*/
+      //window.lat = 25.7614;
+      //window.lng = -80.1791; 
+      window.geo = true;
       callback();
     });
   }
