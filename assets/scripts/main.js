@@ -1,7 +1,8 @@
   $(document).ready(function() {
     main(); 
     $('#more-results').click(dealios.display);  
-    $('.deal .why').live('click', function() {
+    $('.deal .why').live('click', function(event) {
+      event.preventDefault();
       var $this = $(this);
       var parent = $this.parents('.deal');
       var reasoning = $('.reasoning', parent);
@@ -272,6 +273,7 @@
       if($('.deal', '#results').length == 0) {
         results.append(output);
         var position = results.offset();
+        console.log(position);
         window.scrollTo(position.left,position.top);
       }
       else {
