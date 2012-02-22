@@ -109,7 +109,7 @@
     this.ready = false;
     this.counter = 0;
     this.get = function (callback) {
-       $.getJSON(this.api.dev + this.api.deals + '/?city=' + this.city.short_name + '&key=' + this.client_id, {},function(data) {
+       $.getJSON(this.api.base + this.api.deals + '/?city=' + this.city.short_name + '&key=' + this.client_id, {},function(data) {
          this.deals = data.response.deals;
          callback();
        })
@@ -163,7 +163,7 @@
     ready : false,
     counter : 0,
     getCities : function(callback) {
-      $.getJSON(this.api.dev + this.api.cities + '/?key=' + this.client_id, {},function(data) {
+      $.getJSON(this.api.base + this.api.cities + '/?key=' + this.client_id, {},function(data) {
         dealios.cities = data.response.cities;
         callback();
       })
@@ -223,7 +223,7 @@
      },
     getDeals : function (callback) {
       if(dealios.city != "Unknown") {
-        $.getJSON(this.api.dev + this.api.deals + '/?city=' + dealios.city + '&key=' + this.client_id, {},function(data) {
+        $.getJSON(this.api.base + this.api.deals + '/?city=' + dealios.city + '&key=' + this.client_id, {},function(data) {
           dealios.counter = 0;
           dealios.deals = data.response.deals;
           callback();
