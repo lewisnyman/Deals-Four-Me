@@ -1,3 +1,8 @@
+.container-fluid {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
 #foursquare-auth a,
 #more-results {
   display: none;
@@ -21,6 +26,7 @@ a {
 
 .reasons {
   margin-left: 0;
+  list-style-type: none;
 }
 
 #load {
@@ -102,6 +108,7 @@ del:hover {
   padding-top: 57px;
 }
 
+
 .image img {
     -webkit-box-shadow: 0 0 40px 0 rgba(0,0,0,0.1); /* Saf3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
        -moz-box-shadow: 0 0 40px 0 rgba(0,0,0,0.1); /* FF3.5 - 3.6 */
@@ -124,6 +131,27 @@ del:hover {
 	    -ms-animation-fill-mode: both;
 	     -o-animation-fill-mode: both;
 	        animation-fill-mode: both;
+}
+
+@media (max-width: 440px) {
+  aside {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  #main .prices, #main .image {
+    float: left;
+  }
+  #main .prices {
+    margin-left: 2.76243%;
+  }
+  #main .actions {
+    clear: both;
+  }
+  .deal .btn {
+    display: block;
+  }
 }
 
 @-webkit-keyframes fadeInRightBig {

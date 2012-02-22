@@ -214,7 +214,7 @@
          output += '<div id="cities" class="span btn-group">';
          output += Mustache.render(templates.cities, dealios);
          output += '</div';
-        $('.hero-unit p:last-child').append(output);
+        $('.hero-unit p:last').append(output);
        }else {
          output += Mustache.render(templates.cities, dealios);
         $('#cities').html(output);
@@ -248,6 +248,7 @@
       var noMore = false;
       var deals = dealios.deals;
       var lastknowndeal;
+      var results = $('#results');
       for (var i = 0; i < deals.length; i++) {
         if(i > dealios.counter && count <= number){
           var deal = dealios.deals[i];
@@ -268,7 +269,15 @@
       if(output === "") {
         output = "<p class='alert'>I'm sorry, there are no good deals in your area based on your check-in history. Come back in a few days for a fresh batch.</p>"
       }
-      $('#results').append(output);
+      if($('.deal', '#results').length == 0) {
+        results.append(output);
+        var position = results.offset();
+        window.scrollTo(position.left,position.top);
+      }
+      else {
+        results.append(output);
+      }
+      
       },
       redisplay : function() {
         $('.alert').remove();
@@ -391,8 +400,6 @@
   function areWeThereYet(object){
     object.ready = true;
     if(foursquare.ready && dealios.ready) {
-      foursquare.ready = false;
-      dealios.ready = false;
       return true;
     }
   }
